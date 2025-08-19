@@ -614,8 +614,29 @@ body {
     margin-top: 20px;
 }
 
+#heatmap-panel .heatmap-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+#heatmap-labels {
+    background: #fff;
+    border: 1px solid #444;
+    border-right: none;
+    display: block;
+    margin-top: 20px;
+}
+
+#heatmap-axis {
+    background: #fff;
+    border: 1px solid #444;
+    border-left: none;
+    display: block;
+}
+
 #heatmap-canvas {
     background: #fff;
     border: 1px solid #444;
+    border-left: none;
     display: block;
 }
