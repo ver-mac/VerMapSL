@@ -573,5 +573,38 @@ body {
 
 #CredentialText {
     color: rgb(151, 95, 95);
-    
+
+}
+
+/* Heatmap sliding panel */
+#heatmap-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    overflow-x: hidden;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    transition: width 0.3s ease;
+    z-index: 5000;
+}
+
+#heatmap-panel.open {
+    width: 100%;
+}
+
+#heatmap-panel .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 30px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+#heatmap-panel .heatmap-content {
+    padding: 60px 20px;
 }
