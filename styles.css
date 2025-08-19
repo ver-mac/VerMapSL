@@ -608,3 +608,14 @@ body {
 #heatmap-panel .heatmap-content {
     padding: 60px 20px;
 }
+
+#heatmap-panel .heatmap-scroll {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+#heatmap-canvas {
+    background: #fff;
+    border: 1px solid #444;
+    display: block;
+}
