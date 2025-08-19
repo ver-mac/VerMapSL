@@ -62,6 +62,7 @@ let lastOrgName = '';
 
 let credentials = '';
 
+
 const SECRET_KEY = 'VerMapSL_Secret_Key';
 
 async function importKey() {
@@ -103,6 +104,7 @@ async function loadStoredCredentials() {
             if (dataObj.password) document.getElementById('password').value = dataObj.password;
             if (dataObj.orgId) selectedOrgId = dataObj.orgId;
             if (dataObj.orgName) lastOrgName = dataObj.orgName;
+
         } catch (e) {
             console.error('Failed to parse stored credentials', e);
         }
@@ -110,12 +112,14 @@ async function loadStoredCredentials() {
 }
 
 async function saveCredentials() {
+
     try {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const data = { username, password, orgId: selectedOrgId, orgName: lastOrgName };
         const encrypted = await encrypt(JSON.stringify(data));
         localStorage.setItem('lastLogin', JSON.stringify(encrypted));
+
     } catch (e) {
         console.error('Failed to save credentials', e);
     }
