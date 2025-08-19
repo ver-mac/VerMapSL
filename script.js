@@ -186,7 +186,8 @@ function initializeDOMContentLoaded() {
 
 
 
-document.getElementById('save-credentials').addEventListener('click', () => {
+document.getElementById('login-form').addEventListener('submit', (event) => {
+    event.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
