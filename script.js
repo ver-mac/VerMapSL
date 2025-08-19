@@ -758,12 +758,16 @@ document.getElementById('auto-refresh-button').addEventListener('click', () => {
 });
 
 function generateHeatmap() {
-    const canvas = document.getElementById('heatmap-canvas');
-    if (!canvas || Object.keys(markerData).length === 0 || !startDate || !endDate) {
+    const heatmapCanvas = document.getElementById('heatmap-canvas');
+    const labelCanvas = document.getElementById('heatmap-labels');
+    const axisCanvas = document.getElementById('heatmap-axis');
+    if (!heatmapCanvas || !labelCanvas || !axisCanvas || Object.keys(markerData).length === 0 || !startDate || !endDate) {
         return;
     }
 
-    const ctx = canvas.getContext('2d');
+    const heatmapCtx = heatmapCanvas.getContext('2d');
+    const labelCtx = labelCanvas.getContext('2d');
+    const axisCtx = axisCanvas.getContext('2d');
     const devices = Object.keys(markerData);
     const startMinute = Math.floor(startDate.toMillis() / 60000);
     const endMinute = Math.floor(endDate.toMillis() / 60000);
@@ -772,20 +776,31 @@ function generateHeatmap() {
     const labelWidth = 120;
     const cellWidth = 5;
     const cellHeight = 20;
+    const axisHeight = 20;
 
-    canvas.width = labelWidth + cellWidth * totalMinutes;
-    canvas.height = cellHeight * devices.length;
+    labelCanvas.width = labelWidth;
+    labelCanvas.height = cellHeight * devices.length;
+    heatmapCanvas.width = cellWidth * totalMinutes;
+    heatmapCanvas.height = cellHeight * devices.length;
+    axisCanvas.width = heatmapCanvas.width;
+    axisCanvas.height = axisHeight;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = '12px Arial';
-    ctx.textBaseline = 'middle';
+    [heatmapCtx, labelCtx, axisCtx].forEach(ctx => {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    });
+
+    labelCtx.font = '12px Arial';
+    labelCtx.textBaseline = 'middle';
+    axisCtx.font = '12px Arial';
+    axisCtx.textBaseline = 'top';
+    axisCtx.fillStyle = '#000000';
 
     devices.forEach((device, index) => {
         const y = index * cellHeight;
-        ctx.fillStyle = '#000000';
-        ctx.fillText(device, 5, y + cellHeight / 2);
+        labelCtx.fillStyle = '#000000';
+        labelCtx.fillText(device, 5, y + cellHeight / 2);
 
         const positions = markerData[device].positions || [];
         const statuses = markerData[device].statuses || [];
@@ -795,18 +810,48 @@ function generateHeatmap() {
         const timeSet = new Set(times);
         timeSet.forEach(min => {
             if (min >= startMinute && min <= endMinute) {
-                const x = labelWidth + (min - startMinute) * cellWidth;
-                ctx.fillStyle = '#00ff00';
-                ctx.fillRect(x, y, cellWidth, cellHeight - 1);
+                const x = (min - startMinute) * cellWidth;
+                heatmapCtx.fillStyle = '#00ff00';
+                heatmapCtx.fillRect(x, y, cellWidth, cellHeight - 1);
             }
         });
 
-        ctx.strokeStyle = '#dddddd';
-        ctx.beginPath();
-        ctx.moveTo(0, y + cellHeight - 0.5);
-        ctx.lineTo(canvas.width, y + cellHeight - 0.5);
-        ctx.stroke();
+        labelCtx.strokeStyle = '#dddddd';
+        labelCtx.beginPath();
+        labelCtx.moveTo(0, y + cellHeight - 0.5);
+        labelCtx.lineTo(labelCanvas.width, y + cellHeight - 0.5);
+        labelCtx.stroke();
+
+        heatmapCtx.strokeStyle = '#dddddd';
+        heatmapCtx.beginPath();
+        heatmapCtx.moveTo(0, y + cellHeight - 0.5);
+        heatmapCtx.lineTo(heatmapCanvas.width, y + cellHeight - 0.5);
+        heatmapCtx.stroke();
     });
+
+    let currentHour = startDate.startOf('hour');
+    if (currentHour < startDate) {
+        currentHour = currentHour.plus({ hours: 1 });
+    }
+    while (currentHour <= endDate) {
+        const minutesFromStart = Math.floor(currentHour.diff(startDate, 'minutes').minutes);
+        const x = minutesFromStart * cellWidth + 0.5;
+
+        heatmapCtx.strokeStyle = '#eeeeee';
+        heatmapCtx.beginPath();
+        heatmapCtx.moveTo(x, 0);
+        heatmapCtx.lineTo(x, heatmapCanvas.height);
+        heatmapCtx.stroke();
+
+        axisCtx.strokeStyle = '#000000';
+        axisCtx.beginPath();
+        axisCtx.moveTo(x, 0);
+        axisCtx.lineTo(x, axisCanvas.height);
+        axisCtx.stroke();
+
+        axisCtx.fillText(currentHour.toFormat('HH:mm'), x + 2, 2);
+        currentHour = currentHour.plus({ hours: 1 });
+    }
 }
 
 document.getElementById('open-heatmap').addEventListener('click', () => {

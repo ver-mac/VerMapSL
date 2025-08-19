@@ -135,8 +135,12 @@
         <button class="close-btn" id="close-heatmap">&times;</button>
         <div class="heatmap-content">
             <h2>Device Data Heatmap</h2>
-            <div class="heatmap-scroll">
-                <canvas id="heatmap-canvas"></canvas>
+            <div class="heatmap-container">
+                <canvas id="heatmap-labels"></canvas>
+                <div class="heatmap-scroll">
+                    <canvas id="heatmap-axis"></canvas>
+                    <canvas id="heatmap-canvas"></canvas>
+                </div>
             </div>
         </div>
     </div>
