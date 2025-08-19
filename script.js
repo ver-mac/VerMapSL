@@ -58,9 +58,70 @@ function updateLinks(domain) {
 }
 
 let selectedOrgId = 0;
-
+let lastOrgName = '';
 
 let credentials = '';
+
+const SECRET_KEY = 'VerMapSL_Secret_Key';
+
+async function importKey() {
+    const enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(SECRET_KEY), 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+
+async function encrypt(text) {
+    const key = await importKey();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encoded = new TextEncoder().encode(text);
+    const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+    const data = btoa(String.fromCharCode(...new Uint8Array(cipher)));
+    const ivString = btoa(String.fromCharCode(...iv));
+    return { iv: ivString, data };
+}
+
+async function decrypt(stored) {
+    const key = await importKey();
+    const iv = new Uint8Array(atob(stored.iv).split('').map(c => c.charCodeAt(0)));
+    const data = new Uint8Array(atob(stored.data).split('').map(c => c.charCodeAt(0)));
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+    return new TextDecoder().decode(plain);
+}
+
+async function loadStoredCredentials() {
+    const saved = localStorage.getItem('lastLogin');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            let dataObj;
+            if (parsed && parsed.iv && parsed.data) {
+                const decrypted = await decrypt(parsed);
+                dataObj = JSON.parse(decrypted);
+            } else {
+                dataObj = parsed;
+            }
+            if (dataObj.username) document.getElementById('username').value = dataObj.username;
+            if (dataObj.password) document.getElementById('password').value = dataObj.password;
+            if (dataObj.orgId) selectedOrgId = dataObj.orgId;
+            if (dataObj.orgName) lastOrgName = dataObj.orgName;
+        } catch (e) {
+            console.error('Failed to parse stored credentials', e);
+        }
+    }
+}
+
+async function saveCredentials() {
+    try {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const data = { username, password, orgId: selectedOrgId, orgName: lastOrgName };
+        const encrypted = await encrypt(JSON.stringify(data));
+        localStorage.setItem('lastLogin', JSON.stringify(encrypted));
+    } catch (e) {
+        console.error('Failed to save credentials', e);
+    }
+}
+
+loadStoredCredentials();
 
 function initializeDOMContentLoaded() {
     const labels = ['Dev', 'Svr1', 'Svr2']; 
@@ -116,8 +177,10 @@ function initializeDOMContentLoaded() {
                         orgElement.addEventListener('click', () => {
                             selectedOrgId = orgName[name].Id;
                             console.log('Selected Org ID:', selectedOrgId);
-                            selectOrgButton.textContent = name;   
+                            selectOrgButton.textContent = name;
                             dropdownContent.classList.remove('show'); // Close dropdown on select
+                            lastOrgName = name;
+                            saveCredentials();
                         });
                         orgNamesContainer.appendChild(orgElement);
                     }
@@ -143,6 +206,10 @@ function initializeDOMContentLoaded() {
 
             // Initial population
             populateOrgNames();
+            if (lastOrgName && orgName[lastOrgName]) {
+                selectedOrgId = orgName[lastOrgName].Id;
+                selectOrgButton.textContent = lastOrgName;
+            }
 
             // Add event listener to search bar
             searchBar.addEventListener('input', (event) => {
@@ -219,6 +286,7 @@ document.getElementById('login-form').addEventListener('submit', (event) => {
             // Hide the credentials container only on successful login
             const credentialsContainer = document.getElementById('credentials-container');
             credentialsContainer.style.display = 'none';
+            saveCredentials();
         })
         .catch(error => {
             // Credentials popup stays visible, error message is shown
