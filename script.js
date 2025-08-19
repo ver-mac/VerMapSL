@@ -779,8 +779,10 @@ function generateHeatmap() {
     const axisHeight = 20;
 
     labelCanvas.width = labelWidth;
-    labelCanvas.height = cellHeight * devices.length;
+    // Réserver une ligne vide uniquement dans le canvas des labels (barre du temps)
+    labelCanvas.height = cellHeight * (devices.length + 1);
     heatmapCanvas.width = cellWidth * totalMinutes;
+    // Ne pas ajouter la ligne vide dans le heatmap lui-même : garder height = devices.length
     heatmapCanvas.height = cellHeight * devices.length;
     axisCanvas.width = heatmapCanvas.width;
     axisCanvas.height = axisHeight;
@@ -797,10 +799,15 @@ function generateHeatmap() {
     axisCtx.textBaseline = 'top';
     axisCtx.fillStyle = '#000000';
 
+    // Laisser la première ligne vide uniquement dans la colonne des labels.
+    // Les données du heatmap restent sans ligne vide pour rester alignées.
     devices.forEach((device, index) => {
-        const y = index * cellHeight;
+        const labelY = (index + 1) * cellHeight; // position Y pour le label (décalé d'une ligne)
+        const heatY = index * cellHeight; // position Y pour la donnée correspondante (pas de décalage)
+
+        // Dessiner le label sur la ligne décalée (ligne 2..N)
         labelCtx.fillStyle = '#000000';
-        labelCtx.fillText(device, 5, y + cellHeight / 2);
+        labelCtx.fillText(device, 5, labelY + cellHeight / 2);
 
         const positions = markerData[device].positions || [];
         const statuses = markerData[device].statuses || [];
@@ -812,20 +819,21 @@ function generateHeatmap() {
             if (min >= startMinute && min <= endMinute) {
                 const x = (min - startMinute) * cellWidth;
                 heatmapCtx.fillStyle = '#00ff00';
-                heatmapCtx.fillRect(x, y, cellWidth, cellHeight - 1);
+                heatmapCtx.fillRect(x, heatY, cellWidth, cellHeight - 1);
             }
         });
 
+        // Lignes séparatrices : une pour les labels (décalée) et une pour le heatmap (alignée)
         labelCtx.strokeStyle = '#dddddd';
         labelCtx.beginPath();
-        labelCtx.moveTo(0, y + cellHeight - 0.5);
-        labelCtx.lineTo(labelCanvas.width, y + cellHeight - 0.5);
+        labelCtx.moveTo(0, labelY + cellHeight - 0.5);
+        labelCtx.lineTo(labelCanvas.width, labelY + cellHeight - 0.5);
         labelCtx.stroke();
 
         heatmapCtx.strokeStyle = '#dddddd';
         heatmapCtx.beginPath();
-        heatmapCtx.moveTo(0, y + cellHeight - 0.5);
-        heatmapCtx.lineTo(heatmapCanvas.width, y + cellHeight - 0.5);
+        heatmapCtx.moveTo(0, heatY + cellHeight - 0.5);
+        heatmapCtx.lineTo(heatmapCanvas.width, heatY + cellHeight - 0.5);
         heatmapCtx.stroke();
     });
 
