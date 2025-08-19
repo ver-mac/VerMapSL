@@ -107,17 +107,24 @@ async function loadStoredCredentials() {
             if (dataObj.username) {
                 document.getElementById('username').value = dataObj.username;
             }
-            if (dataObj.password) {
-                document.getElementById('password').value = dataObj.password;
-            }
             if (dataObj.orgId) {
                 selectedOrgId = dataObj.orgId;
             }
             if (dataObj.orgName) {
                 lastOrgName = dataObj.orgName;
             }
-            if (dataObj.username && dataObj.password) {
-                credentials = btoa(`${dataObj.username}:${dataObj.password}`);
+            if (dataObj.password) {
+                delete dataObj.password;
+                try {
+                    const encrypted = await encrypt(JSON.stringify(dataObj));
+                    localStorage.setItem('lastLogin', JSON.stringify(encrypted));
+                } catch (e) {
+                    try {
+                        localStorage.setItem('lastLogin', JSON.stringify(dataObj));
+                    } catch (storageError) {
+                        console.error('Failed to update stored credentials', storageError);
+                    }
+                }
             }
         } catch (e) {
             console.error('Failed to parse stored credentials', e);
@@ -127,8 +134,7 @@ async function loadStoredCredentials() {
 
 async function saveCredentials() {
     const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const data = { username, password, orgId: selectedOrgId, orgName: lastOrgName };
+    const data = { username, orgId: selectedOrgId, orgName: lastOrgName };
 
     try {
         const encrypted = await encrypt(JSON.stringify(data));
