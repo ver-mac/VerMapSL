@@ -18,25 +18,22 @@
     
     <div id="foreground">
         <div id="credentials-container">
-            <div>
+            <form id="login-form" autocomplete="on">
                 <div id="login">
-                    
-                    <div><input type="text" id="username" placeholder="Email"></div>
+                    <div><input type="email" id="username" name="username" placeholder="Email" autocomplete="username" required></div>
                 </div>
                 <div id="login">
-                    
-                    <div><input type="password" id="password" placeholder="Password"></div>
+                    <div><input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required></div>
                 </div>
-            </div>
-            <div id="submit">
-                <img src="image/logo.png" alt="vermac button" class="vermac-button-image" id="save-credentials">
-                
-                
-            </div>
-            <div id="CredentialText">
-                <label>Inserting wrong credentials won't allow you to continue.</label>
-            </div>
-            
+                <div id="submit">
+                    <button type="submit" id="save-credentials">
+                        <img src="image/logo.png" alt="vermac button" class="vermac-button-image">
+                    </button>
+                </div>
+                <div id="CredentialText">
+                    <label>Inserting wrong credentials won't allow you to continue.</label>
+                </div>
+            </form>
         </div>
     </div>
 
