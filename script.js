@@ -93,18 +93,32 @@ async function loadStoredCredentials() {
     if (saved) {
         try {
             const parsed = JSON.parse(saved);
-            let dataObj;
-            if (parsed && parsed.iv && parsed.data) {
-                const decrypted = await decrypt(parsed);
-                dataObj = JSON.parse(decrypted);
-            } else {
-                dataObj = parsed;
-            }
-            if (dataObj.username) document.getElementById('username').value = dataObj.username;
-            if (dataObj.password) document.getElementById('password').value = dataObj.password;
-            if (dataObj.orgId) selectedOrgId = dataObj.orgId;
-            if (dataObj.orgName) lastOrgName = dataObj.orgName;
+            let dataObj = parsed;
 
+            if (parsed && parsed.iv && parsed.data) {
+                try {
+                    const decrypted = await decrypt(parsed);
+                    dataObj = JSON.parse(decrypted);
+                } catch (e) {
+                    console.warn('Failed to decrypt stored credentials, using plain data', e);
+                }
+            }
+
+            if (dataObj.username) {
+                document.getElementById('username').value = dataObj.username;
+            }
+            if (dataObj.password) {
+                document.getElementById('password').value = dataObj.password;
+            }
+            if (dataObj.orgId) {
+                selectedOrgId = dataObj.orgId;
+            }
+            if (dataObj.orgName) {
+                lastOrgName = dataObj.orgName;
+            }
+            if (dataObj.username && dataObj.password) {
+                credentials = btoa(`${dataObj.username}:${dataObj.password}`);
+            }
         } catch (e) {
             console.error('Failed to parse stored credentials', e);
         }
@@ -112,20 +126,24 @@ async function loadStoredCredentials() {
 }
 
 async function saveCredentials() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const data = { username, password, orgId: selectedOrgId, orgName: lastOrgName };
 
     try {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const data = { username, password, orgId: selectedOrgId, orgName: lastOrgName };
         const encrypted = await encrypt(JSON.stringify(data));
         localStorage.setItem('lastLogin', JSON.stringify(encrypted));
-
     } catch (e) {
-        console.error('Failed to save credentials', e);
+        console.warn('Failed to encrypt credentials, storing in plain text', e);
+        try {
+            localStorage.setItem('lastLogin', JSON.stringify(data));
+        } catch (storageError) {
+            console.error('Failed to save credentials', storageError);
+        }
     }
 }
 
-loadStoredCredentials();
+document.addEventListener('DOMContentLoaded', loadStoredCredentials);
 
 function initializeDOMContentLoaded() {
     const labels = ['Dev', 'Svr1', 'Svr2']; 
