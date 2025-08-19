@@ -58,9 +58,37 @@ function updateLinks(domain) {
 }
 
 let selectedOrgId = 0;
-
+let lastOrgName = '';
 
 let credentials = '';
+
+function loadStoredCredentials() {
+    const saved = localStorage.getItem('lastLogin');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (data.username) document.getElementById('username').value = data.username;
+            if (data.password) document.getElementById('password').value = data.password;
+            if (data.orgId) selectedOrgId = data.orgId;
+            if (data.orgName) lastOrgName = data.orgName;
+        } catch (e) {
+            console.error('Failed to parse stored credentials', e);
+        }
+    }
+}
+
+function saveCredentials() {
+    try {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const data = { username, password, orgId: selectedOrgId, orgName: lastOrgName };
+        localStorage.setItem('lastLogin', JSON.stringify(data));
+    } catch (e) {
+        console.error('Failed to save credentials', e);
+    }
+}
+
+loadStoredCredentials();
 
 function initializeDOMContentLoaded() {
     const labels = ['Dev', 'Svr1', 'Svr2']; 
@@ -116,8 +144,10 @@ function initializeDOMContentLoaded() {
                         orgElement.addEventListener('click', () => {
                             selectedOrgId = orgName[name].Id;
                             console.log('Selected Org ID:', selectedOrgId);
-                            selectOrgButton.textContent = name;   
+                            selectOrgButton.textContent = name;
                             dropdownContent.classList.remove('show'); // Close dropdown on select
+                            lastOrgName = name;
+                            saveCredentials();
                         });
                         orgNamesContainer.appendChild(orgElement);
                     }
@@ -143,6 +173,10 @@ function initializeDOMContentLoaded() {
 
             // Initial population
             populateOrgNames();
+            if (lastOrgName && orgName[lastOrgName]) {
+                selectedOrgId = orgName[lastOrgName].Id;
+                selectOrgButton.textContent = lastOrgName;
+            }
 
             // Add event listener to search bar
             searchBar.addEventListener('input', (event) => {
@@ -219,6 +253,7 @@ document.getElementById('login-form').addEventListener('submit', (event) => {
             // Hide the credentials container only on successful login
             const credentialsContainer = document.getElementById('credentials-container');
             credentialsContainer.style.display = 'none';
+            saveCredentials();
         })
         .catch(error => {
             // Credentials popup stays visible, error message is shown
