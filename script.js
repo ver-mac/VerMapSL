@@ -757,7 +757,60 @@ document.getElementById('auto-refresh-button').addEventListener('click', () => {
     // Auto-refresh button logic
 });
 
+function generateHeatmap() {
+    const canvas = document.getElementById('heatmap-canvas');
+    if (!canvas || Object.keys(markerData).length === 0 || !startDate || !endDate) {
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    const devices = Object.keys(markerData);
+    const startMinute = Math.floor(startDate.toMillis() / 60000);
+    const endMinute = Math.floor(endDate.toMillis() / 60000);
+    const totalMinutes = endMinute - startMinute + 1;
+
+    const labelWidth = 120;
+    const cellWidth = 5;
+    const cellHeight = 20;
+
+    canvas.width = labelWidth + cellWidth * totalMinutes;
+    canvas.height = cellHeight * devices.length;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '12px Arial';
+    ctx.textBaseline = 'middle';
+
+    devices.forEach((device, index) => {
+        const y = index * cellHeight;
+        ctx.fillStyle = '#000000';
+        ctx.fillText(device, 5, y + cellHeight / 2);
+
+        const positions = markerData[device].positions || [];
+        const statuses = markerData[device].statuses || [];
+        const times = [...positions, ...statuses]
+            .map(item => Math.floor(item.timestamp / 60000));
+
+        const timeSet = new Set(times);
+        timeSet.forEach(min => {
+            if (min >= startMinute && min <= endMinute) {
+                const x = labelWidth + (min - startMinute) * cellWidth;
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(x, y, cellWidth, cellHeight - 1);
+            }
+        });
+
+        ctx.strokeStyle = '#dddddd';
+        ctx.beginPath();
+        ctx.moveTo(0, y + cellHeight - 0.5);
+        ctx.lineTo(canvas.width, y + cellHeight - 0.5);
+        ctx.stroke();
+    });
+}
+
 document.getElementById('open-heatmap').addEventListener('click', () => {
+    generateHeatmap();
     document.getElementById('heatmap-panel').classList.add('open');
 });
 
