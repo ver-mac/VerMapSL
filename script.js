@@ -757,6 +757,14 @@ document.getElementById('auto-refresh-button').addEventListener('click', () => {
     // Auto-refresh button logic
 });
 
+document.getElementById('open-heatmap').addEventListener('click', () => {
+    document.getElementById('heatmap-panel').classList.add('open');
+});
+
+document.getElementById('close-heatmap').addEventListener('click', () => {
+    document.getElementById('heatmap-panel').classList.remove('open');
+});
+
 
 function displayTimezone() {
     const timezoneOffset = DateTime.local().offset;
