@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver-Map</title>
+    <link rel="icon" type="image/x-image" href="image/logo.png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/2.2.0/luxon.min.js" defer></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+
+
+
+<header>
+    
+    <div id="foreground">
+        <div id="credentials-container">
+            <div>
+                <div id="login">
+                    
+                    <div><input type="text" id="username" placeholder="Email"></div>
+                </div>
+                <div id="login">
+                    
+                    <div><input type="password" id="password" placeholder="Password"></div>
+                </div>
+            </div>
+            <div id="submit">
+                <img src="image/logo.png" alt="vermac button" class="vermac-button-image" id="save-credentials">
+                
+                
+            </div>
+            <div id="CredentialText">
+                <label>Inserting wrong credentials won't allow you to continue.</label>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="foreground">
+        <div class="foreground-content">
+        
+                
+
+            
+                        <div class="dev-sign">
+                            <button type="button" id="dev-button" class="dev-button">
+                                <h3 id="dev-label" class="dev-sign">Dev</h3>
+                            </button>
+                        </div>
+                    
+                
+              
+            <div class="log-menu">
+                <div>
+                    <div class="date-picker">
+                        <div><label for="start-date">From:</label></div>
+                        <div><input type="date" id="start-date"></div>
+                    </div>
+                    <div class="date-picker">
+                        <div><label for="end-date">To:</label></div>
+                        <div><input type="date" id="end-date"></div>
+                    </div>
+                </div>
+                
+                <div class="parent-flex-container">
+                    <div class="dropdown-flex">
+                        <div class="dropdown" style="width: 100%;">
+                            <button type="button" class="dropbtn">Select Organization</button>
+                            <div class="dropdown-content">
+                                <div class="orgNamesContainer">
+                                    <input type="text" id="searchBar" placeholder="Search for an organization" autocomplete="off">
+                                    <div id="orgNamesContainer"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-flex">
+                        <button type="button" id="includeLastButton" class="includeLastButton">Include Last Known</button>
+                        <button type="button" id="hide-device-off">Show Device Off</button>
+                        <button type="submit" id="fetch-data">
+                            <img src="image/logo.png" alt="vermac button" class="vermac-button-image" id="button-logo">
+                            <label for="button-logo" style="cursor: pointer">Generate</label>
+                        </button>
+                    </div>
+                </div>
+            
+        </div>
+        
+    </div>
+
+    
+
+    
+</header>
+
+<body>
+        <div class="bottom-container">
+            
+            <div class="marker-container">
+                <div class="marker-buttons" id="marker-names-container">
+                </div>
+            </div>
+            <div style="display: flex;">
+                
+                <div class="slider-container" id="slider-container" style="display: none;">
+                    
+                    
+                    <div id="realtime-slider">
+                        <div class="refresh-container"><button type="button" id="auto-refresh-button">Enable Live</button></div>
+                        
+                        <div class="speedKit">
+                            <button id="pause-button">Pause</button>
+                            <div id="speed-buttons" class="speedMultiplier">
+                                
+                                <button data-speed="0.25">0.25x</button>
+                                <button data-speed="0.5">0.5x</button>
+                                <button data-speed="1">1x</button>
+                                <button data-speed="1.5">1.5x</button>
+                                <button data-speed="2">2x</button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="range" id="time-slider" min="0" max="100" value="0" step="1">
+                    <div class="timezoneDisplay"><span id="slider-value">YY/MM/DD 00:00</span> <span id="timezone"></span></div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<div id="map"></div>
+</html>
